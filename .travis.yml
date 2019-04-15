@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t hlinus/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run hlinus/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t hlinus/multi-client ./client
+  - docker build -t hlinus/multi-nginx ./nginx
+  - docker build -t hlinus/multi-server ./server
+  - docker build -t hlinus/multi-worker ./worker
+  # Log in to docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_ID" --password-stdin
+  - docker push hlinus/multi-client
+  - docker push hlinus/multi-nginx
+  - docker push hlinus/multi-server
+  - docker push hlinus/multi-worker
+
